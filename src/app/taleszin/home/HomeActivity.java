@@ -88,7 +88,7 @@ public class HomeActivity extends Activity {
 
     static final String[] DEFAULT_FAVS = {
             "app.mamba.prancheta",
-            "org.mozilla.firefox",
+            "org.bromite.bromite",
             "free.rm.skytube.oss",
             "org.videolan.vlc",
             "net.sourceforge.opencamera",
@@ -312,6 +312,14 @@ public class HomeActivity extends Activity {
         LinearLayout.LayoutParams stLp = new LinearLayout.LayoutParams(-2, -2);
         stLp.topMargin = dp(6);
         clockBlock.addView(statusView, stLp);
+
+        // assinatura da ROM: "TALESZIN OS · 1.3.0" (espaçado à mão; setLetterSpacing só existe do 5.0 pra cima)
+        TextView mark = text(11, ACCENT, Typeface.DEFAULT_BOLD);
+        mark.setText(wordmark());
+        mark.setAlpha(0.85f);
+        LinearLayout.LayoutParams mkLp = new LinearLayout.LayoutParams(-2, -2);
+        mkLp.topMargin = dp(18);
+        clockBlock.addView(mark, mkLp);
 
         dockBlock = new LinearLayout(this);
         dockBlock.setOrientation(LinearLayout.VERTICAL);
@@ -932,5 +940,22 @@ public class HomeActivity extends Activity {
         @Override public void setAlpha(int a) { p.setAlpha(a); invalidateSelf(); }
         @Override public void setColorFilter(ColorFilter cf) { p.setColorFilter(cf); invalidateSelf(); }
         @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
+    }
+
+    static String sysProp(String k) {
+        try {
+            Object v = Class.forName("android.os.SystemProperties").getMethod("get", String.class).invoke(null, k);
+            return v == null ? "" : v.toString().trim();
+        } catch (Throwable t) { return ""; }
+    }
+
+    static String wordmark() {
+        String n = sysProp("ro.taleszin.name"), v = sysProp("ro.taleszin.version");
+        if (n.length() == 0) n = "Taleszin OS";
+        if (v.length() == 0) v = sysProp("ro.m7s.version");
+        StringBuilder sb = new StringBuilder();
+        for (char c : n.toUpperCase(java.util.Locale.ROOT).toCharArray()) { if (sb.length() > 0) sb.append(c == ' ' ? "  " : "\u2009"); if (c != ' ') sb.append(c); }
+        if (v.length() > 0) sb.append("   \u00b7   ").append(v);
+        return sb.toString();
     }
 }
