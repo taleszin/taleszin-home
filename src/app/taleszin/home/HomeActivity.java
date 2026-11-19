@@ -152,6 +152,13 @@ public class HomeActivity extends Activity {
         pf.addAction(Intent.ACTION_PACKAGE_REPLACED);
         pf.addDataScheme("package");
         registerReceiver(packageReceiver, pf);
+
+        // Apps instalados no cartão SD (asec) só aparecem depois que o SD monta:
+        // no boot o PackageManager pula esses pacotes e avisa com este broadcast (sem "data").
+        IntentFilter ef = new IntentFilter();
+        ef.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_AVAILABLE);
+        ef.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_UNAVAILABLE);
+        registerReceiver(packageReceiver, ef);
     }
 
     @Override
@@ -221,6 +228,8 @@ public class HomeActivity extends Activity {
         public void onReceive(Context ctx, Intent i) {
             Uri data = i.getData();
             if (data != null) evictIcons(data.getSchemeSpecificPart());
+            String[] pkgs = i.getStringArrayExtra(Intent.EXTRA_CHANGED_PACKAGE_LIST);
+            if (pkgs != null) for (String p : pkgs) evictIcons(p);
             loadApps();
             refreshDock();
         }
